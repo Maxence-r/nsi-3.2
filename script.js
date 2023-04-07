@@ -1,41 +1,43 @@
-let personnage = extraction("Caracteristiques_des_persos.csv", "characters.csv")
+/* Bon c'est du javascript, bonne lecture */
 
-function extraction(file_1, file_2) {
-    var character_table = []
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var rows = this.responseText.split("\n");
-            var headers = rows[0].split(";")
-            for (var i = 1; i < rows.length; i++) {
-                var element = rows[i].split(";")
-                var obj = {}
-                for (var j = 0; j < headers.length; j++) {
-                    obj[headers[j]] = element[j]
-                }
-                character_table.push(obj)
+let personnage = extraction("Caracteristiques_des_persos.csv", "characters.csv") // Extraction des données
+
+function extraction(file_1, file_2) { // Extraction des données
+    let character_table = [] // Tableau qui contiendra les données
+    let xhr = new XMLHttpRequest(); // Création de l'objet XMLHttpRequest
+    xhr.onreadystatechange = function() { // Fonction qui sera appelée à chaque changement d'état de la requête
+        if (this.readyState == 4 && this.status == 200) { // Si la requête est terminée et que la réponse est prête
+            let rows = this.responseText.split("\n"); // On récupère le texte de la réponse
+            let headers = rows[0].split(";") // On récupère les headers
+            for (let i = 1; i < rows.length; i++) { // On parcourt les lignes
+                let element = rows[i].split(";") // On récupère les éléments de la ligne
+                let obj = {} // On crée un objet
+                for (let j = 0; j < headers.length; j++) { // On parcourt les headers
+                    obj[headers[j]] = element[j] // On ajoute les éléments à l'objet
+                } 
+                character_table.push(obj) // On ajoute l'objet au tableau
             }
         }
     };
-    xhr.open("GET", file_1, false);
-    xhr.send();
+    xhr.open("GET", file_1, false); // On ouvre la requête
+    xhr.send(); // On envoie la requête
 
-    var xhr2 = new XMLHttpRequest();
-    xhr2.onreadystatechange = function() {
+    let xhr2 = new XMLHttpRequest();
+    xhr2.onreadystatechange = function() { 
         if (this.readyState == 4 && this.status == 200) {
-            var rows = this.responseText.split("\n");
-            var headers = rows[0].split(";")
-            var characters = []
-            for (var i = 1; i < rows.length; i++) {
-                var element = rows[i].split(";")
-                var obj = {}
-                for (var j = 0; j < headers.length; j++) {
+            let rows = this.responseText.split("\n"); 
+            let headers = rows[0].split(";")
+            let characters = []
+            for (let i = 1; i < rows.length; i++) {
+                let element = rows[i].split(";")
+                let obj = {}
+                for (let j = 0; j < headers.length; j++) {
                     obj[headers[j]] = element[j]
                 }
                 characters.push(obj)
             }
-            for (var key in characters) {
-                for (var character in character_table) {
+            for (let key in characters) {
+                for (let character in character_table) {
                     if (character_table[character]['Name'] == characters[key]['Name']) {
                         character_table[character]['House'] = characters[key]['House']
                     }
@@ -48,18 +50,27 @@ function extraction(file_1, file_2) {
     return character_table
 }
 
-function distance(profil, personnage, methode = 'euclidienne') {
-    return Math.sqrt(Math.pow(parseInt(profil['Courage']) - parseInt(personnage['Courage']), 2) + Math.pow(parseInt(profil['Ambition']) - parseInt(personnage['Ambition']), 2) + Math.pow(parseInt(profil['Intelligence']) - parseInt(personnage['Intelligence']), 2) + Math.pow(parseInt(profil['Good']) - parseInt(personnage['Good']), 2))
+function distance(profil, personnage) { // Calcul de la distance entre deux personnages
+    return Math.sqrt(Math.pow(parseInt(profil['Courage']) - parseInt(personnage['Courage']), 2) + Math.pow(parseInt(profil['Ambition']) - parseInt(personnage['Ambition']), 2) + Math.pow(parseInt(profil['Intelligence']) - parseInt(personnage['Intelligence']), 2) + Math.pow(parseInt(profil['Good']) - parseInt(personnage['Good']), 2))  
 }
 
-function ajout_distance(tab, unknown_character) {
+function ajout_distance(tab, profile_type) { // Ajout de la distance entre le personnage inconnu et les autres personnages
     for (let i = 0; i < tab.length; i++) {
-        tab[i]['Distance'] = distance(unknown_character, tab[i]);
+        tab[i]['Distance'] = distance(profile_type, tab[i]); 
     }
     return tab;
 }
 
-function best_house(tab) {
+function results_creation(tab) { // Création du tableau des résultats
+    let results = {};
+    for (let i = 0; i < tab.length; i++) {
+        results[tab[i]['Name']] = tab[i]['House'];
+    }
+    return results;
+}
+
+
+function best_house(tab) { // Renvoie la maison la plus représentée parmi les k plus proches voisins
     let included_house = {};
     for (let i = 0; i < tab.length; i++) {
         let neighboor = tab[i];
@@ -81,15 +92,15 @@ function best_house(tab) {
     return top_house;
 }
 
-function profile_creation(base) {
+function profile_creation(base) { 
     for (let caracteristics in base) {
         base[caracteristics] = parseInt(prompt(`${caracteristics} : `));
     }
     return base;
 }
 
-function execution(profile_type) {
-    let characters = ajout_distance(personnage, profile_type);
+function execution(profile_type) { // Fonction qui renvoie la maison la plus représentée parmi les k plus proches voisins
+    ajout_distance(personnage, profile_type);
     let k = 5;
     let voisins = personnage.sort(function(a, b) {
         return a['Distance'] - b['Distance'];
@@ -97,98 +108,113 @@ function execution(profile_type) {
     return [best_house(voisins.slice(0, k)), voisins.slice(0, k)];
 }
 
-function results_creation(tab) {
-    let results = {};
-    for (let i = 0; i < tab.length; i++) {
-        results[tab[i]['Name']] = tab[i]['House'];
-    }
-    return results;
-}
 
 let currentQuestion = 0;
-let tosend = [0, 0, 0, 0];
-let questions = {
-    "Avez vous peur du noir ?": [{
-            Oui: [0, 0, 0, 0]
+let tosend = [5, 5, 5, 5];
+let questions = { // Questions du questionnaire
+    "Quelle est ta potion preferer": [{
+            "Force": [0, 1, 0, 0]
         },
         {
-            Non: [0, 1, 2, 3]
+            "Chance": [0, 0, -1, 1]
         },
         {
-            "Peut être": [0, 1, 2, 3]
-        },
-        {
-            "Je ne sais pas": [0, 1, 2, 3]
+            "Invisibilité": [-2, 0, 0, -2]
         },
     ],
-    "Avez vous peur des araignées ?": [{
-            Oui: [0, 0, 0, 0]
+    "Quelle passe temps tu aimes ?": [{
+        "dormir": [-1, -3, 0, 1]
         },
         {
-            Non: [0, 1, 2, 3]
+            "Travailler": [1, 2, 2, 0]
         },
         {
-            "Peut être": [0, 1, 2, 3]
-        },
-        {
-            "Je ne sais pas": [0, 1, 2, 3]
+            "Sauver le monde": [3, 2, 0, 3]
         },
     ],
-    "Avez vous peur des chiens ?": [{
-            Oui: [0, 0, 0, 1]
+    "Quand tu vois tomber un billet de la poche de quelqu un tu ...": [{
+            "interpelle la personne pour lui rendre": [0, 0, -1, 2]
         },
         {
-            Non: [0, 1, 2, 3]
+            "prends le billet": [0, 0, 1, -2]
         },
         {
-            "Peut être": [0, 1, 2, 3]
+            "le donne a un sdf": [0, 0, 1, 2]
+        }, 
+    ],
+    "Tu considere les molduts comme ?": [{
+            "des etre non sorcier": [0, 0, 1, 0]
         },
         {
-            "Je ne sais pas": [0, 1, 2, 3]
+            "des personnes": [0, 0, 0, 0]
+        },
+        {
+            "des etres inferieurs": [0, 0, 0, -2]
         },
     ],
-    "Avez vous peur des serpents ?": [{
-            Oui: [0, 1, 0, 0]
+    "quand quelqu un tappe un eleve tu...": [{
+            "viens le sauver": [2, 0, 0, 1]
         },
         {
-            Non: [0, 1, 0, 0]
+            "appelle la police": [-1, 0, 1, 1]
         },
         {
-            "Peut être": [0, 1, 0, 0]
-        },
-        {
-            "Je ne sais pas": [0, 1, 2, 3]
+            "ignore car c est une victime": [-1, 0, 0, -5]
         },
     ],
-    "Avez vous peur des souris ?": [{
-            Oui: [0, 1, 2, 3]
+    "Quel est la personne dont ne peut pas pronocer le nom ?": [{
+            "Voldemort": [2, 0, 0, 0]
         },
         {
-            Non: [0, 1, 2, 3]
+            "celui qui a fait la reforme des retraites": [1, 0, -2, 0]
         },
         {
-            "Peut être": [0, 1, 2, 3]
-        },
-        {
-            "Je ne sais pas": [0, 1, 2, 3]
+            "je ne peux pas c est interdit": [-2, 0, 1, 0]
         },
     ],
-    "Avez vous peur des chats ?": [{
-            Oui: [0, 1, 2, 3]
+    "quel est le mage le plus puissant ?": [{
+            "Voldemort": [0, 0, -1, 0]
         },
         {
-            Non: [0, 1, 2, 3]
+            "Dumbeldort": [0, 0, 2, 0]
         },
         {
-            "Peut être": [0, 1, 2, 3]
-        },
-        {
-            "Je ne sais pas": [0, 1, 2, 3]
+            "Moi": [0, 2, -1, 0]
         },
     ],
+    "tu dis pain au chocolat ou chocolatine ?": [{
+            "pain au chocolat": [0, 0, 1, 1]
+        },
+        {
+            "chocolatine": [1, 0, -1, -1]
+        },
+        {
+            "pain au chocolatine": [0, 0, -4, -2]
+        },
+    ],
+    "quel age a dumbeldort ?": [{
+            "46": [0, 0, -1, 0]
+        },
+        {
+            "15": [0, 0, -2, 0]
+        },
+        {
+            "116": [0, 0, 2, 0]
+        },
+    ],
+    "Que veux tu devenir plus tard ?": [{
+            "etre riche": [0, 2, 1, 0]
+        },
+        {
+            "peut importe tant que je suis heureux": [0, -2, 0, 3]
+        },
+        {
+            "Je sais pas": [0, -4, 0, 0]
+        },
+    ]
 };
 
-const questionEl = document.getElementById("question");
+const questionEl = document.getElementById("question"); 
 const buttons = document.querySelectorAll(".button-container button");
 
 function displayQuestion() {
@@ -224,6 +250,21 @@ buttons.forEach((button, index) => {
             });
             console.log(result);
             alert(`Vous êtes de le maison ${result[0]} !`);
+            result[1].forEach((element) => {
+                console.log(element);
+                document.getElementById('voisins').innerHTML += `<p>Voisins : ${JSON.stringify(element)}</p>`;
+                document.querySelector('body').classList.add('turn');
+            });
         }
     });
 });
+
+
+setTimeout(() => {
+    document.querySelector(`.frame-incroyable`).style.display = 'flex';
+}, 20000);
+
+document.getElementById(`Loaduponguns,bringyourfriendsIt'sfuntoloseandtopretendShe'soverboredandselfassuredOhno,IknowadirtywordHello,hello,hello,howlowHello,hello,hello,howlowHello,hello,hello,howlowHello,hello,helloWiththelightsout,it'slessdangerousHerewearenow,entertainusIfeelstupidandcontagiousHerewearenow,entertainusAmulatto,analbino,amosquito,mylibidoYeah,heyYayI'mworseatwhatIdobestAndforthisgiftIfeelblessedOurlittlegrouphasalwaysbeenAndalwayswilluntiltheendHello,hello,hello,howlowHello,hello,hello,howlowHello,hello,hello,howlowHello,hello,helloWiththelightsout,it'slessdangerousHerewearenow,entertainusIfeelstupidandcontagiousHerewearenow,entertainusAmulatto,analbino,amosquito,mylibidoYeah,heyYayAndIforgetjustwhyItasteOhyeah,IguessitmakesmesmileIfoundithard,washardtofindOhwell,whatever,nevermindHello,hello,hello,howlowHello,hello,hello,howlowHello,hello,hello,howlowHello,hello,helloWiththelightsout,it'slessdangerousHerewearenow,entertainusIfeelstupidandcontagiousHerewearenow,entertainusAmulatto,analbino,amosquito,mylibidoAdenial,adenial,adenial,adenial,adenialAdenial,adenial,adenial,adenial`).addEventListener('click', () => {
+    document.querySelector(`.frame-incroyable`).style.display = 'none';
+});
+/* Bonne soirée ! */

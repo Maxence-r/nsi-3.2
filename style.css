@@ -1,4 +1,5 @@
 body {
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -11,6 +12,10 @@ body {
     background-position: center;
     background-attachment: fixed;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+#voisins {
+    color: white;
 }
 
 .blur {
@@ -43,7 +48,78 @@ button {
     transition: all 0.3s ease 0s;
 }
 
+
+
 button:hover {
     background-color: #ff00f7;
     color: #22ff00;
+    transform: scale(1.5);
+    animation: shake 1s linear infinite;
+}
+
+.turn {
+    animation: turn 6s linear;
+    animation: shake 4s linear;
+}
+
+.frame-incroyable {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-image: url("./stop.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    z-index: 10;
+}
+
+@keyframes shake {
+    0% {
+        transform: translate(1px, 1px) rotate(0deg);
+    }
+    10% {
+        transform: translate(-1px, -2px) rotate(-1deg);
+    }
+    20% {
+        transform: translate(-3px, 0px) rotate(1deg);
+    }
+    30% {
+        transform: translate(3px, 2px) rotate(0deg);
+        transform: scale(1.9);
+    }
+    40% {
+        transform: translate(1px, -1px) rotate(1deg);
+    }
+    50% {
+        transform: translate(-1px, 2px) rotate(-1deg);
+    }
+    60% {
+        transform: translate(-3px, 1px) rotate(0deg);
+    }
+    70% {
+        transform: translate(3px, 1px) rotate(-1deg);
+    }
+    80% {
+        transform: translate(-1px, -1px) rotate(1deg);
+    }
+    90% {
+        transform: translate(1px, 2px) rotate(0deg);
+    }
+    100% {
+        transform: translate(1px, -2px) rotate(-1deg);
+    }
+}
+
+@keyframes turn {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
